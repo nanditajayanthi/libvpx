@@ -755,6 +755,22 @@ static void accumulate_floating_point_stats(VP9_COMP *cpi,
   }
 }
 
+void my_export_firstpass_stats(const FIRSTPASS_STATS *fps) {
+    FILE *f = fopen("firstpass_stats_text.csv", "a");
+    if (!f) return;
+    fprintf(f,
+      "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%ld\n",
+      fps->frame, fps->weight, fps->intra_error, fps->coded_error,
+      fps->sr_coded_error, fps->frame_noise_energy, fps->pcnt_inter,
+      fps->pcnt_motion, fps->pcnt_second_ref, fps->pcnt_neutral,
+      fps->pcnt_intra_low, fps->pcnt_intra_high, fps->intra_skip_pct,
+      fps->intra_smooth_pct, fps->inactive_zone_rows, fps->inactive_zone_cols,
+      fps->MVr, fps->mvr_abs, fps->MVc, fps->mvc_abs,
+      fps->MVrv, fps->MVcv, fps->spatial_layer_id);
+    fclose(f);
+}
+
+
 static void first_pass_stat_calc(VP9_COMP *cpi, FIRSTPASS_STATS *fps,
                                  FIRSTPASS_DATA *fp_acc_data) {
   VP9_COMMON *const cm = &cpi->common;
@@ -837,6 +853,9 @@ static void first_pass_stat_calc(VP9_COMP *cpi, FIRSTPASS_STATS *fps,
     fps->mv_in_out_count = 0.0;
     fps->pcnt_motion = 0.0;
   }
+	
+  my_export_firstpass_stats(fps);
+  
 }
 
 static void accumulate_fp_mb_row_stat(TileDataEnc *this_tile,
