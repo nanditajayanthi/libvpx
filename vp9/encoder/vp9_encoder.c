@@ -857,10 +857,15 @@ static void setup_frame(VP9_COMP *cpi) {
     cpi->refresh_golden_frame = 1;
     cpi->refresh_alt_ref_frame = 1;
     vp9_zero(cpi->interp_filter_selected);
+    //cm->frame_type = 3;
+    //my_export_frame_info(cm->frame_type);
   } else {
     *cm->fc = cm->frame_contexts[cm->frame_context_idx];
     vp9_zero(cpi->interp_filter_selected[0]);
+    //cm->frame_type = 1;
+    //my_export_frame_info(cm->frame_type);
   }
+
 }
 
 static void vp9_enc_setup_mi(VP9_COMMON *cm) {
@@ -6117,12 +6122,21 @@ static INLINE int should_run_tpl(VP9_COMP *cpi, int gf_group_index) {
   return 0;
 }
 
+void my_export_frame_info(FRAME_TYPE frame_type) {
+    FILE *f = fopen("firstpass_frame_info.csv", "a");
+    if (!f) return;
+    fprintf(f,
+      "%i\n", frame_type);
+    fclose(f);
+} 
+
 int vp9_get_compressed_data(VP9_COMP *cpi, unsigned int *frame_flags,
                             size_t *size, uint8_t *dest, size_t dest_size,
                             int64_t *time_stamp, int64_t *time_end, int flush,
                             ENCODE_FRAME_RESULT *encode_frame_result) {
   const VP9EncoderConfig *const oxcf = &cpi->oxcf;
   VP9_COMMON *const cm = &cpi->common;
+  my_export_frame_info(cm->frame_type);
   BufferPool *const pool = cm->buffer_pool;
   RATE_CONTROL *const rc = &cpi->rc;
 #if CONFIG_INTERNAL_STATS
@@ -6725,7 +6739,7 @@ int vp9_get_preview_raw_frame(VP9_COMP *cpi, YV12_BUFFER_CONFIG *dest,
   } else {
     int ret;
 #if CONFIG_VP9_POSTPROC
-    ret = vp9_post_proc_frame(cm, dest, flags, cpi->un_scaled_source->y_width);
+  /  ret = vp9_post_proc_frame(cm, dest, flags, cpi->un_scaled_source->y_width);
 #else
     if (cm->frame_to_show) {
       *dest = *cm->frame_to_show;
